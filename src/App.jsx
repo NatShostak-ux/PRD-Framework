@@ -380,7 +380,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [isRepositioning, setIsRepositioning] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   
   const fileInputRef = useRef(null);
 
@@ -388,8 +388,8 @@ export default function App() {
   const dragItem = useRef({ solId: null, arrayName: null, index: null });
   const dragOverItem = useRef({ solId: null, arrayName: null, index: null });
 
-  // Firebase integration
-  const prdDocRef = doc(db, 'projects', 'prd-main');
+  // Firebase integration - stabilize ref so listener doesn't restart on every render
+  const prdDocRef = useRef(doc(db, 'projects', 'prd-main')).current;
 
   useEffect(() => {
     const unsubscribe = onSnapshot(prdDocRef, (docSnap) => {
@@ -414,7 +414,8 @@ export default function App() {
       setPrdState(newData); // Optimistic UI update
       setDoc(prdDocRef, newData).catch(error => {
           console.error("Error saving document: ", error);
-          alert("Error saving your changes offline. Check connection.");
+          setSaveError(true);
+          setTimeout(() => setSaveError(false), 4000);
       });
   }, [prdDocRef]);
 
@@ -500,7 +501,7 @@ export default function App() {
 
     if (!source.solId || !target.solId || source.arrayName !== target.arrayName) return;
 
-    setPrd(prev => {
+    setPrdState(prev => {
       const newSolutions = JSON.parse(JSON.stringify(prev.solutions));
       const sourceSol = newSolutions.find(s => s.id === source.solId);
       const targetSol = newSolutions.find(s => s.id === target.solId);
@@ -511,7 +512,6 @@ export default function App() {
       targetSol[target.arrayName].splice(target.index, 0, itemToMove);
 
       const newPrd = { ...prev, solutions: newSolutions };
-      // Note: intentionally bypassing savePrd here to avoid too many writes until drag finishes, wait for next tick
       setTimeout(() => savePrd(newPrd), 0);
       return newPrd;
     });
@@ -657,48 +657,24 @@ export default function App() {
         {/* MAIN CONTENT AREA - SCROLL CONTINUO */}
         <main id="main-scroll-container" className="flex-1 overflow-y-auto figjam-bg relative scroll-smooth pt-14 md:pt-0">
           
+          {/* Save error toast */}
+          {saveError && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-rose-600 text-white text-sm px-5 py-2.5 rounded-xl shadow-lg animate-pulse">
+              ⚠️ Errore nel salvataggio — controlla la connessione
+            </div>
+          )}
+
           {/* NOTION-LIKE COVER */}
           <div 
-            className="w-full h-40 md:h-72 relative group transition-all select-none"
+            className="w-full h-40 md:h-72 relative group transition-all"
             style={{
               background: prd.coverImage,
               backgroundSize: 'cover',
-              backgroundPosition: `center ${prd.coverPosition ?? 50}%`,
+              backgroundPosition: 'center',
             }}
           >
-            {/* Overlay scuro + slider quando si sta riposizionando */}
-            {isRepositioning && (
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-20">
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl px-5 py-3 flex flex-col items-center gap-2 shadow-lg">
-                  <span className="text-[11px] text-slate-500 uppercase tracking-widest font-medium">Trascina per riposizionare</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={prd.coverPosition ?? 50}
-                    onChange={(e) => updateMainField('coverPosition', Number(e.target.value))}
-                    className="w-48 accent-slate-800"
-                  />
-                  <button
-                    onClick={() => setIsRepositioning(false)}
-                    className="text-xs text-white bg-slate-800 hover:bg-slate-900 px-4 py-1.5 rounded-lg mt-1 transition-all"
-                  >
-                    ✓ Fatto
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Bottoni controllo cover (visibili al hover) */}
-            <div className="absolute bottom-4 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
-              {prd.coverImage?.includes('url(') && (
-                <button
-                  onClick={() => setIsRepositioning(r => !r)}
-                  className="flex items-center gap-2 bg-white/80 hover:bg-white text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm backdrop-blur-sm transition-all"
-                >
-                  Riposiziona
-                </button>
-              )}
+            {/* Tasto per cambiare cover che appare al passaggio del mouse */}
+            <div className="absolute bottom-4 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2 bg-white/80 hover:bg-white text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm backdrop-blur-sm transition-all"
