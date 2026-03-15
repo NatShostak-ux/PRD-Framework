@@ -656,18 +656,22 @@ export default function App() {
         <main id="main-scroll-container" className="flex-1 overflow-y-auto figjam-bg relative scroll-smooth pt-14 md:pt-0">
           
           {/* NOTION-LIKE COVER */}
-          <div 
-            className="w-full h-40 md:h-72 relative group transition-all"
-            style={{
-              background: prd.coverImage,
-              backgroundSize: '100% auto',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundColor: prd.coverImage?.includes('url') ? '#f8fafc' : 'transparent'
-            }}
-          >
+          <div className="w-full h-40 md:h-72 relative group transition-all overflow-hidden bg-slate-50">
+            {prd.coverImage?.includes('url(') ? (
+              <img 
+                src={prd.coverImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, '')} 
+                alt="Cover" 
+                className="w-full h-full object-cover object-center"
+              />
+            ) : (
+              <div 
+                className="w-full h-full" 
+                style={{ background: prd.coverImage }}
+              />
+            )}
+            
             {/* Tasto per cambiare cover che appare al passaggio del mouse */}
-            <div className="absolute bottom-4 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute bottom-4 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2 bg-white/80 hover:bg-white text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm backdrop-blur-sm transition-all"
