@@ -810,7 +810,7 @@ export default function App() {
                               </div>
                               
                               {(feature.notes || activeNotes[feature.id]) ? (
-                                  <div className="mt-2 mb-1">
+                                  <div className="mt-2 mb-1 flex items-start gap-1">
                                     <SeamlessInput 
                                       value={feature.notes} 
                                       onChange={v => updateArray(area.id, 'features', feature.id, 'notes', v)} 
@@ -818,6 +818,16 @@ export default function App() {
                                       placeholder="Nota..." 
                                       textClassName="text-[12px] text-slate-400 italic bg-slate-50 p-1.5 rounded" 
                                     />
+                                    <button
+                                      onClick={() => {
+                                        updateArray(area.id, 'features', feature.id, 'notes', '');
+                                        setActiveNotes(prev => { const n = {...prev}; delete n[feature.id]; return n; });
+                                      }}
+                                      className="text-slate-300 hover:text-rose-400 transition-colors mt-1 flex-shrink-0"
+                                      title="Elimina nota"
+                                    >
+                                      <X size={12} />
+                                    </button>
                                   </div>
                                 ) : (
                                   <button 
