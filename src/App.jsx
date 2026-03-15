@@ -109,6 +109,7 @@ const initialData = {
   author: "Product Team",
   // Default cover che simula il gradient dell'immagine allegata
   coverImage: "linear-gradient(90deg, #d3d5d8 0%, #c98fb4 25%, #ee757e 50%, #fa9e88 75%, #fcd0c2 100%)",
+  coverPosition: 50,
   solutions: [
     {
       id: "area-1",
@@ -379,6 +380,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isRepositioning, setIsRepositioning] = useState(false);
   
   const fileInputRef = useRef(null);
 
@@ -657,15 +659,46 @@ export default function App() {
           
           {/* NOTION-LIKE COVER */}
           <div 
-            className="w-full h-40 md:h-72 relative group transition-all"
+            className="w-full h-40 md:h-72 relative group transition-all select-none"
             style={{
               background: prd.coverImage,
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: `center ${prd.coverPosition ?? 50}%`,
             }}
           >
-            {/* Tasto per cambiare cover che appare al passaggio del mouse */}
-            <div className="absolute bottom-4 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Overlay scuro + slider quando si sta riposizionando */}
+            {isRepositioning && (
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-20">
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl px-5 py-3 flex flex-col items-center gap-2 shadow-lg">
+                  <span className="text-[11px] text-slate-500 uppercase tracking-widest font-medium">Trascina per riposizionare</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={prd.coverPosition ?? 50}
+                    onChange={(e) => updateMainField('coverPosition', Number(e.target.value))}
+                    className="w-48 accent-slate-800"
+                  />
+                  <button
+                    onClick={() => setIsRepositioning(false)}
+                    className="text-xs text-white bg-slate-800 hover:bg-slate-900 px-4 py-1.5 rounded-lg mt-1 transition-all"
+                  >
+                    ✓ Fatto
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Bottoni controllo cover (visibili al hover) */}
+            <div className="absolute bottom-4 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
+              {prd.coverImage?.includes('url(') && (
+                <button
+                  onClick={() => setIsRepositioning(r => !r)}
+                  className="flex items-center gap-2 bg-white/80 hover:bg-white text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm backdrop-blur-sm transition-all"
+                >
+                  Riposiziona
+                </button>
+              )}
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2 bg-white/80 hover:bg-white text-slate-700 px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm backdrop-blur-sm transition-all"
