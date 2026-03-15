@@ -661,7 +661,7 @@ export default function App() {
               <img 
                 src={prd.coverImage.replace(/^url\(["']?/, '').replace(/["']?\)$/, '')} 
                 alt="Cover" 
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-contain object-center"
               />
             ) : (
               <div 
