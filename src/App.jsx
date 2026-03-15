@@ -657,11 +657,11 @@ export default function App() {
           
           {/* NOTION-LIKE COVER */}
           <div 
-            className="w-full h-40 md:h-72 relative group transition-all"
+            className="w-full h-56 md:h-[400px] relative group transition-all"
             style={{
               background: prd.coverImage,
               backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundPosition: 'center 30%',
             }}
           >
             {/* Tasto per cambiare cover che appare al passaggio del mouse */}
