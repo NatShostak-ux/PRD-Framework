@@ -804,12 +804,23 @@ export default function App() {
                             <td className="py-3 px-2 md:px-3 align-top w-[140px]">
                               <PrioritySelect value={feature.priority} onChange={v => updateArray(area.id, 'features', feature.id, 'priority', v)} />
                             </td>
-                            <td className="py-3 px-2 md:px-3 align-top text-slate-700 font-light relative group/note">
-                              <div className="min-w-[200px]">
-                                <SeamlessInput value={feature.text} onChange={v => updateArray(area.id, 'features', feature.id, 'text', v)} multiline />
+                            <td className="py-3 px-2 md:px-3 align-top text-slate-700 font-light group/note">
+                              <div className="flex items-start gap-1 min-w-[200px]">
+                                <div className="flex-1">
+                                  <SeamlessInput value={feature.text} onChange={v => updateArray(area.id, 'features', feature.id, 'text', v)} multiline />
+                                </div>
+                                {!(feature.notes || activeNotes[feature.id]) && (
+                                  <button 
+                                    onClick={() => setActiveNotes(prev => ({...prev, [feature.id]: true}))}
+                                    className="md:opacity-0 group-hover/note:opacity-100 text-slate-300 hover:text-slate-500 transition-opacity mt-1 flex-shrink-0"
+                                    title="Aggiungi Nota"
+                                  >
+                                    <MessageSquarePlus size={12} />
+                                  </button>
+                                )}
                               </div>
-                              
-                              {(feature.notes || activeNotes[feature.id]) ? (
+
+                              {(feature.notes || activeNotes[feature.id]) && (
                                   <div className="mt-2 mb-1 flex items-start gap-1">
                                     <SeamlessInput 
                                       value={feature.notes} 
@@ -829,15 +840,7 @@ export default function App() {
                                       <X size={12} />
                                     </button>
                                   </div>
-                                ) : (
-                                  <button 
-                                    onClick={() => setActiveNotes(prev => ({...prev, [feature.id]: true}))}
-                                    className="absolute -left-2 md:-left-5 top-4 md:opacity-0 group-hover/note:opacity-100 text-slate-300 hover:text-slate-500 transition-opacity"
-                                    title="Aggiungi Nota"
-                                  >
-                                    <MessageSquarePlus size={12} />
-                                  </button>
-                                )}
+                              )}
                             </td>
                             <td className="py-3 px-2 md:px-3 align-top w-[150px]">
                               <PhaseSelect value={feature.phase || "Set-up"} onChange={v => updateArray(area.id, 'features', feature.id, 'phase', v)} />
