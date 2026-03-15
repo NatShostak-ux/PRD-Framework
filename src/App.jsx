@@ -411,8 +411,9 @@ export default function App() {
 
   // Unified save function
   const savePrd = useCallback((newData) => {
-      setPrdState(newData); // Optimistic UI update
-      setDoc(prdDocRef, newData).catch(error => {
+      const dataWithDate = { ...newData, lastUpdated: new Date().toLocaleDateString('it-IT') };
+      setPrdState(dataWithDate); // Optimistic UI update
+      setDoc(prdDocRef, dataWithDate).catch(error => {
           console.error("Error saving document: ", error);
           setSaveError(true);
           setTimeout(() => setSaveError(false), 4000);
