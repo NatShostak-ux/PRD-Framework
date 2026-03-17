@@ -248,76 +248,61 @@ const initialData = {
 
 // --- COMPONENTI UI ---
 
-const SeamlessInput = ({ value, onChange, placeholder, multiline, className = "", textClassName = "" }) => {
+const SeamlessInput = ({ value, onChange, placeholder = "Inserisci testo...", multiline, className = "", textClassName = "" }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [localValue, setLocalValue] = useState(value);
   const inputRef = useRef(null);
-
-  // Sync external changes when not editing
-  useEffect(() => {
-    if (!isEditing) {
-      setLocalValue(value);
-    }
-  }, [value, isEditing]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      if (multiline) {
-        inputRef.current.style.height = 'auto';
-        inputRef.current.style.height = inputRef.current.scrollHeight + 'px';
-      }
+      // Place cursor at the end
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(inputRef.current);
+      range.collapse(false);
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
-  }, [isEditing, multiline]);
-
-  const handleInput = (e) => {
-    setLocalValue(e.target.value);
-    if (multiline) {
-      e.target.style.height = 'auto';
-      e.target.style.height = e.target.scrollHeight + 'px';
-    }
-  };
+  }, [isEditing]);
 
   const handleBlur = () => {
     setIsEditing(false);
-    if (localValue !== value) {
-      onChange(localValue);
+    const newValue = inputRef.current.innerHTML;
+    if (newValue !== value) {
+      onChange(newValue);
     }
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !multiline) {
+      e.preventDefault();
       handleBlur();
     }
   };
 
   if (isEditing) {
-    const commonProps = {
-      ref: inputRef,
-      value: localValue,
-      onChange: handleInput,
-      onBlur: handleBlur,
-      onKeyDown: handleKeyDown,
-      placeholder: placeholder,
-      className: `w-full bg-white outline-none ring-1 ring-slate-300 rounded p-1 -m-1 resize-none overflow-hidden transition-all text-slate-700 ${textClassName}`
-    };
-
-    return multiline ? (
-      <textarea {...commonProps} rows={1} />
-    ) : (
-      <input type="text" {...commonProps} />
+    return (
+      <div
+        ref={inputRef}
+        contentEditable
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        dangerouslySetInnerHTML={{ __html: value }}
+        className={`w-full bg-white outline-none ring-1 ring-slate-300 rounded p-1 -m-1 transition-all text-slate-700 text-left min-h-[1.5em] ${textClassName}`}
+      />
     );
   }
 
   return (
     <div 
-      className={`cursor-text rounded hover:bg-slate-50 p-1 -m-1 transition-all border border-transparent hover:border-slate-200 border-dashed ${className}`}
+      className={`cursor-text rounded hover:bg-slate-50 p-1 -m-1 transition-all border border-transparent hover:border-slate-200 border-dashed text-left ${className}`}
       onClick={() => setIsEditing(true)}
       title="Clicca per modificare"
     >
-      <span className={`${!value ? 'text-slate-300 italic font-light' : ''} ${textClassName}`}>
-        {value || placeholder}
-      </span>
+      <div 
+        className={`${!value || value === '<br>' ? 'text-slate-300 italic font-light' : ''} ${textClassName} text-left min-h-[1.5em]`}
+        dangerouslySetInnerHTML={{ __html: value || placeholder }}
+      />
     </div>
   );
 };
@@ -342,6 +327,7 @@ const PrioritySelect = ({ value, onChange }) => {
     "Must-Have": "bg-rose-50 text-rose-700 border-rose-200",
     "Should-Have": "bg-amber-50 text-amber-700 border-amber-200",
     "Could-Have": "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "Won't-Have": "bg-slate-50 text-slate-500 border-slate-200",
   };
   return <SelectDropdown value={value} onChange={onChange} options={Object.keys(map)} colorMap={map} />;
 };
@@ -360,8 +346,9 @@ const TypeSelect = ({ value, onChange }) => {
     "Issue": "bg-orange-50 text-orange-700 border-orange-200",
     "Decisione": "bg-teal-50 text-teal-700 border-teal-200",
     "Vincolo": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
+    "Dipendenza": "bg-indigo-50 text-indigo-700 border-indigo-200",
   };
-  return <SelectDropdown value={value} onChange={onChange} options={["Issue", "Decisione", "Vincolo"]} colorMap={map} />;
+  return <SelectDropdown value={value} onChange={onChange} options={Object.keys(map)} colorMap={map} />;
 };
 
 const StatusSelect = ({ value, onChange }) => {
@@ -593,10 +580,14 @@ export default function App() {
       ])
     );
 
-    // Escape CSV values: wrap in quotes and escape internal quotes
+    // Escape CSV values: strip HTML, wrap in quotes, escape internal quotes
     const csvContent = [
       headers.join(","),
-      ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(","))
+      ...rows.map(row => row.map(cell => {
+        // Strip HTML tags for CSV
+        const plainText = (cell || "").toString().replace(/<[^>]*>/g, '');
+        return `"${plainText.replace(/"/g, '""')}"`;
+      }).join(","))
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -937,6 +928,21 @@ export default function App() {
                               <div className="mb-1">
                                 <SeamlessInput value={item.text} onChange={v => updateArray(area.id, 'issuesDecisions', item.id, 'text', v)} multiline />
                               </div>
+                              {item.type === 'Dipendenza' && (
+                                <div className="mb-2 flex items-center gap-2">
+                                  <span className="text-[10px] text-indigo-400 uppercase tracking-widest shrink-0">Da:</span>
+                                  <select 
+                                    value={item.linkedArea || ""} 
+                                    onChange={v => updateArray(area.id, 'issuesDecisions', item.id, 'linkedArea', v.target.value)}
+                                    className="text-[11px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded border border-indigo-100 outline-none w-full max-w-[200px]"
+                                  >
+                                    <option value="">Seleziona Area...</option>
+                                    {prd.solutions.map(s => (
+                                      <option key={s.id} value={s.id}>{s.title.replace(/AREA \d+:\s*/, '')}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
                               <div>
                                 <SeamlessInput 
                                   value={item.response} 
