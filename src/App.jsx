@@ -579,6 +579,37 @@ export default function App() {
     }
   };
 
+  const exportCSV = () => {
+    const headers = ["Area ID", "Area Title", "Priority", "Phase", "Feature", "Notes"];
+    
+    const rows = prd.solutions.flatMap(area => 
+      area.features.map(f => [
+        area.id,
+        area.title,
+        f.priority,
+        f.phase || "Set-up",
+        f.text,
+        f.notes || ""
+      ])
+    );
+
+    // Escape CSV values: wrap in quotes and escape internal quotes
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${(cell || "").toString().replace(/"/g, '""')}"`).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `PRD_Solution_Alignment_${new Date().toLocaleDateString('it-IT').replace(/\//g, '-')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const exportJSON = () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prd, null, 2));
     const a = document.createElement('a');
@@ -643,6 +674,12 @@ export default function App() {
               className={`w-full flex items-center justify-center gap-2 text-xs uppercase tracking-wide text-white rounded-lg py-2.5 transition-all shadow-md ${isExporting ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-900'}`}
             >
               <FileText size={14} /> {isExporting ? 'Generazione...' : 'Esporta PDF'}
+            </button>
+             <button 
+              onClick={exportCSV} 
+              className="w-full flex items-center justify-center gap-2 text-xs uppercase tracking-wide text-slate-700 bg-white border border-slate-200 rounded-lg py-2.5 transition-all shadow-sm hover:bg-slate-50"
+            >
+              <Download size={14} /> Esporta CSV
             </button>
              <button onClick={exportJSON} className="w-full text-center text-[10px] uppercase tracking-wide text-slate-400 hover:text-slate-600 transition-all">
               Scarica Backup JSON
