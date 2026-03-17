@@ -301,14 +301,14 @@ const SeamlessInput = ({ value, onChange, placeholder = "Inserisci testo...", mu
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         dangerouslySetInnerHTML={{ __html: value }}
-        className={`w-full bg-white outline-none ring-2 ring-indigo-100 rounded-lg p-1 -m-1 smooth-transition text-slate-700 text-left min-h-[1.5em] shadow-sm ${textClassName}`}
+        className={`w-full bg-white outline-none ring-1 ring-indigo-200 rounded-lg p-1 -m-1 smooth-transition text-slate-700 text-left min-h-[1.5em] ${textClassName}`}
       />
     );
   }
 
   return (
     <div 
-      className={`cursor-text rounded-lg hover:bg-slate-50 p-1 -m-1 smooth-transition border border-transparent hover:border-slate-200 border-dashed text-left hover:shadow-sm active:scale-[0.99] ${className}`}
+      className={`cursor-text rounded-lg hover:bg-slate-50 p-1 -m-1 smooth-transition border border-transparent hover:border-slate-200 border-dashed text-left ${className}`}
       onClick={() => setIsEditing(true)}
       title="Clicca per modificare"
     >
@@ -327,7 +327,7 @@ const SelectDropdown = ({ value, onChange, options, colorMap }) => {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full text-[11px] uppercase tracking-wide font-medium px-2 py-1.5 rounded-lg border outline-none cursor-pointer smooth-transition appearance-none text-center hover:shadow-sm active:scale-[0.98] ${colorMap[value] || "bg-slate-50 text-slate-600 border-slate-200"}`}
+        className={`w-full text-[11px] uppercase tracking-wide font-medium px-2 py-1.5 rounded-lg border outline-none cursor-pointer smooth-transition appearance-none text-center ${colorMap[value] || "bg-slate-50 text-slate-600 border-slate-200"}`}
       >
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
@@ -872,8 +872,10 @@ export default function App() {
                                     />
                                     <button
                                       onClick={() => {
-                                        updateArray(area.id, 'features', feature.id, 'notes', '');
-                                        setActiveNotes(prev => { const n = {...prev}; delete n[feature.id]; return n; });
+                                        if (window.confirm("Sei sicuro di voler eliminare questa nota?")) {
+                                          updateArray(area.id, 'features', feature.id, 'notes', '');
+                                          setActiveNotes(prev => { const n = {...prev}; delete n[feature.id]; return n; });
+                                        }
                                       }}
                                       className="text-slate-300 hover:text-rose-400 transition-colors mt-1 flex-shrink-0"
                                       title="Elimina nota"
