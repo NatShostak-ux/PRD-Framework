@@ -43,6 +43,19 @@ const globalStyles = `
     z-index: 0;
   }
 
+  /* Smooth Transitions */
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+  }
+
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -288,14 +301,14 @@ const SeamlessInput = ({ value, onChange, placeholder = "Inserisci testo...", mu
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         dangerouslySetInnerHTML={{ __html: value }}
-        className={`w-full bg-white outline-none ring-1 ring-slate-300 rounded p-1 -m-1 transition-all text-slate-700 text-left min-h-[1.5em] ${textClassName}`}
+        className={`w-full bg-white outline-none ring-2 ring-indigo-100 rounded-lg p-1 -m-1 smooth-transition text-slate-700 text-left min-h-[1.5em] shadow-sm ${textClassName}`}
       />
     );
   }
 
   return (
     <div 
-      className={`cursor-text rounded hover:bg-slate-50 p-1 -m-1 transition-all border border-transparent hover:border-slate-200 border-dashed text-left ${className}`}
+      className={`cursor-text rounded-lg hover:bg-slate-50 p-1 -m-1 smooth-transition border border-transparent hover:border-slate-200 border-dashed text-left hover:shadow-sm active:scale-[0.99] ${className}`}
       onClick={() => setIsEditing(true)}
       title="Clicca per modificare"
     >
@@ -314,7 +327,7 @@ const SelectDropdown = ({ value, onChange, options, colorMap }) => {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full text-[11px] uppercase tracking-wide font-medium px-2 py-1.5 rounded border outline-none cursor-pointer transition-colors appearance-none text-center ${colorMap[value] || "bg-slate-50 text-slate-600 border-slate-200"}`}
+        className={`w-full text-[11px] uppercase tracking-wide font-medium px-2 py-1.5 rounded-lg border outline-none cursor-pointer smooth-transition appearance-none text-center hover:shadow-sm active:scale-[0.98] ${colorMap[value] || "bg-slate-50 text-slate-600 border-slate-200"}`}
       >
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
