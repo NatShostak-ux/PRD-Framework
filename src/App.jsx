@@ -45,7 +45,7 @@ const globalStyles = `
 
   /* Smooth Transitions */
   .smooth-transition {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, ring 0.15s ease-in-out;
   }
 
   .hover-lift {
@@ -301,7 +301,7 @@ const SeamlessInput = ({ value, onChange, placeholder = "Inserisci testo...", mu
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         dangerouslySetInnerHTML={{ __html: value }}
-        className={`w-full bg-white outline-none ring-1 ring-indigo-200 rounded-lg p-1 -m-1 smooth-transition text-slate-700 text-left min-h-[1.5em] ${textClassName}`}
+        className={`w-full bg-white outline-none border border-slate-200 rounded-lg p-1 -m-1 smooth-transition text-slate-700 text-left min-h-[1.5em] ${textClassName}`}
       />
     );
   }
@@ -327,7 +327,7 @@ const SelectDropdown = ({ value, onChange, options, colorMap }) => {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full text-[11px] uppercase tracking-wide font-medium px-2 py-1.5 rounded-lg border outline-none cursor-pointer smooth-transition appearance-none text-center ${colorMap[value] || "bg-slate-50 text-slate-600 border-slate-200"}`}
+        className={`w-full text-[11px] uppercase tracking-wide font-medium px-2 py-1.5 rounded-lg border border-slate-100 outline-none cursor-pointer smooth-transition appearance-none text-center ${colorMap[value] || "bg-slate-50 text-slate-600 border-slate-200"}`}
       >
         {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
       </select>
